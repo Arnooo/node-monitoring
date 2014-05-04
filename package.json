@@ -3,7 +3,7 @@
     	"name": "Arnaud Joubel",
     	"email": "arnaud.joubel@gmail.com"
   	},
-  	"name": "monitoring",
+  	"name": "node-monitoring",
     "version": "0.1.0",
     "dependencies": {
         "mysql": "*",
@@ -19,5 +19,18 @@
 	    "monitoring",
 	    "temperature",
 	    "probe"
-	]
+	],
+    "licenses": [
+      {
+        "type": "MIT",
+        "url": "https://github.com/Arnooo/node-monitoring/blob/master/LICENSE"
+      }
+    ], 
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:Arnooo/node-monitoring.git"
+    },  
+    "bugs": {
+        "url": "https://github.com/Arnooo/node-monitoring/issues"
+    }
 }
