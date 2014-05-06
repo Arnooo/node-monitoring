@@ -1,4 +1,3 @@
-var pi = require('rpi-gpio');
 var util = require("util");
 var events = require("events");
 
