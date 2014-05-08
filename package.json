@@ -31,5 +31,11 @@
     },  
     "bugs": {
         "url": "https://github.com/Arnooo/node-monitoring/issues"
+    },
+    "scripts": {
+      "test": "make test"
+    },
+    "devDependencies": {
+        "mocha": ">= 1.18.2"
     }
 }

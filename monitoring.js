@@ -28,8 +28,8 @@ io.sockets.on('connection', function (socket) {
  * @param {Object} res, result send to client
  * @api public
  */
-exports.create = function() {
-    return new Monitoring();
+exports.create = function(config) {
+    return new Monitoring(config);
 };
 
 /**
@@ -95,17 +95,67 @@ Send.prototype.file = function(path){
  *
  * @api public
  */
-function Monitoring(){
+function Monitoring(config){
   var self = this;
-  fs.readFile('json/config.json', 'utf8', function (err,data) {
-    if (err) {
-      return console.error(err);
-    }
-    self.config_=JSON.parse(data);
-    self.init();
-
-  });
+  var isConfigValid = false;
+  var deferred = Q.defer(); 
+  if(!config){
+    //read default config
+    fs.readFile(__dirname+'/config.json', 'utf8', function (err,data) {
+        if (err) {
+          return console.error(err);
+        }
+        self.validateConfig_(JSON.parse(data))
+        .then(function(){
+          return self.init();
+        })
+        .then(function(){
+            var msg = "Success: Monitoring initialized!";
+            deferred.resolve({msg:msg});
+            console.log(msg);
+        })
+        .catch(function(err){
+            deferred.reject(err);
+        })
+        .done();
+    });
+  }
+  else{
+      self.validateConfig_(config)
+      .then(function(){
+        return self.init();
+      })
+      .then(function(){
+          var msg = "Success: Monitoring initialized!";
+          deferred.resolve({msg:msg});
+          console.log(msg);
+      })
+      .catch(function(err){
+          deferred.reject(err);
+      })
+      .done();
+  }
+  return deferred.promise;
 };
+
+Monitoring.prototype.validateConfig_ = function(config) {
+    var self=this;
+    var deferred = Q.defer(); 
+    if(config.db_host && 
+       config.db_user &&
+       (config.db_password === "" || config.db_password)){
+        self.config_=config;
+        var msg = "Success: Monitoring config validated!";
+        deferred.resolve({msg:msg});
+        console.log(msg);
+    }
+    else{
+        var msg = "Error: Monitoring config not valid!";
+        deferred.reject(new Error(msg));
+        console.error(msg);
+    }
+    return deferred.promise;
+}
 
 Monitoring.prototype.init = function() {
     var self=this;
@@ -119,13 +169,14 @@ Monitoring.prototype.init = function() {
     self.monitoringDB_ = require('./monitoringDB').create(self.config_);
     self.monitoringDB_.init()
     .then(function(){
-      console.log("Database connection successful!");
       if(self.probesMgt_){
         self.probesMgt_.clean();
         self.probesMgt_=null;
       }
       self.probesMgt_ = require('./probesManagement').create(self.monitoringDB_, io);
-      deferred.resolve();
+      var msg = "Success: Database connection successful!";
+      deferred.resolve({msg:msg});
+      console.log(msg);
     })
     .catch(function(err){
       deferred.reject(err);
