@@ -8,7 +8,7 @@ var assert = require("assert"),
 describe('W1bus', function(){
   describe('#create()', function(){
     it('should return an object correctly initialized!', function(done){
-      var monitor = monitoring.create()
+      var monitor = monitoring.create().initWithConfig()
       .then(function(data){
           assert.equal(data.msg, "Success: Monitoring initialized!");
           done();
@@ -37,7 +37,7 @@ describe('W1bus', function(){
   describe('#create()', function(){
     it('should return an error because of wrong config!', function(done){
       var fackConfig={};
-      var monitor = monitoring.create(fackConfig)
+      var monitor = monitoring.create().initWithConfig(fackConfig)
       .then(function(data){
           throw new Error("You should not succeed!");
           done();

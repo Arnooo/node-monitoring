@@ -97,7 +97,12 @@ Send.prototype.file = function(path){
  */
 function Monitoring(config){
   var self = this;
-  var isConfigValid = false;
+  self.initWithConfig(config);
+}
+
+
+Monitoring.prototype.initWithConfig = function(config) {
+  var self = this;
   var deferred = Q.defer(); 
   if(!config){
     //read default config
@@ -216,7 +221,7 @@ Monitoring.prototype.setConfig = function(req, config) {
     self.init()
     .then(function(){
       self.send_.json({monitoring:true});
-      fs.writeFile('json/config.json', JSON.stringify(self.config_), function (err,data) {
+      fs.writeFile(__dirname+'/config.json', JSON.stringify(self.config_), function (err,data) {
       if (err) {
         return console.error(err);
       }
