@@ -148,7 +148,7 @@ Monitoring.prototype.validateConfig_ = function(config) {
     var deferred = Q.defer(); 
     if(config.db_host && 
        config.db_user &&
-       (config.db_password === "" || config.db_password)){
+       config.db_password){
         self.config_=config;
         var msg = "Success: Monitoring config validated!";
         deferred.resolve({msg:msg});

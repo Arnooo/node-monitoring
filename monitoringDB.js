@@ -11,10 +11,7 @@ var mysql =  require('mysql'),
 var MONITORING_DB="MonitoringDB";
 
 var createError = function (errorMsg){
-  return {
-    error:true,
-    errorMsg:errorMsg
-  };
+  return new Error(errorMsg);
 };
 
 /**
@@ -76,15 +73,16 @@ MonitoringDB.prototype.isConnected_ = function(){
       password: self.config_.password,
       connectTimeout: self.config_.connectTimeout
   });
-  console.log("Trying to connect to DB!");
+  console.log("Trying to connect to DB!"+self.config_.password);
   connection.connect(function(err) {
       if(err){
           console.error('Error connecting to database server: ',self.config_.host);
           deferred.reject(createError("Error: Cannot connect to the database!"));
       }
       else{
-          console.log("Connected to database server: "+self.config_.host);
-          deferred.resolve();
+          var msg = "Success: Connected to database server: "+self.config_.host;
+          deferred.resolve({msg:msg});
+          console.log(msg);
       }
   });
   connection.end();
@@ -108,8 +106,9 @@ MonitoringDB.prototype.isDatabaseExist_ = function(){
           deferred.reject(createError("Error: "+MONITORING_DB+" database does not exist!"));
       }
       else{
-          console.log("Database "+MONITORING_DB+" exist.");
-          deferred.resolve();
+          var msg = "Success: Database "+MONITORING_DB+" exist.";
+          deferred.resolve({msg:msg});
+          console.log(msg);
       }
   });
   connection.end();
@@ -138,8 +137,9 @@ MonitoringDB.prototype.createDB = function(){
             deferred.reject(createError("Error: Cannot create the database: "+MONITORING_DB));
         }
         else{
-            deferred.resolve();
-            console.log("Database "+MONITORING_DB+" created!");
+            var msg = "Success: Database "+MONITORING_DB+" created!";
+            deferred.resolve({msg:msg});
+            console.log(msg);
         }
     });
     connection.end();
@@ -215,7 +215,9 @@ MonitoringDB.prototype.query = function(req, send, path) {
     });
   }
   else{
-      send.json(createError("Error: The connection is not correctly initialized!"));
+      if(send){
+        send.json(createError("Error: The connection is not correctly initialized!"));
+      }
       deferred.reject(createError("Error: The connection is not correctly initialized!"));
   }
   return deferred.promise;
