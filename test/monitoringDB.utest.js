@@ -2,12 +2,13 @@ var assert = require("assert"),
     sinon = require("sinon"),
     monitoringDB = require("../monitoringDB");
 
+var conf={"db_host":"127.0.0.1","db_user":"root","db_password":"bestpasswordever"};
+
 //--------------------------------------------------------------------------------
 // test cases - testing monitoring initialization
 //
 describe('Monitoring DB: normal cases', function(){
 
-    var conf={"db_host":"127.0.0.1","db_user":"root","db_password":"bestpasswordever"};
     var monitorDB = monitoringDB.create(conf);
 
     describe('#create()', function(){
@@ -38,7 +39,6 @@ monitoringDB.query
 // test cases - testing for failure
 //
 describe('MonitoringDB: failure cases', function(){
-    var conf={"db_host":"127.0.0.1","db_user":"root","db_password":"bestpasswordever"};
     var monitorDB = monitoringDB.create(conf);
 
 });

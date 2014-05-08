@@ -2,6 +2,7 @@ var assert = require("assert"),
     sinon = require("sinon"),
     monitoring = require("../monitoring");
 
+var conf={"db_host":"127.0.0.1","db_user":"root","db_password":"bestpasswordever"};
 //--------------------------------------------------------------------------------
 // test cases - testing monitoring initialization
 //
@@ -96,7 +97,7 @@ describe('Monitoring: normal cases', function(){
   describe('#getConfig()', function(){
     it('should return a valid config!', function(done){
       monitor.clear();
-      monitor.config_={"db_host":"127.0.0.1","db_user":"root","db_password":"bestpasswordever"};
+      monitor.config_=conf;
       monitor.validateConfig_(monitor.getConfig())
       .then(function(data){
           assert.equal(data.msg, "Success: Monitoring config validated!");
@@ -112,7 +113,7 @@ describe('Monitoring: normal cases', function(){
   describe('#process()', function(){
     it('should call the given callback and send a response back!', function(){
       monitor.clear();
-      monitor.config_={"db_host":"127.0.0.1","db_user":"root","db_password":"bestpasswordever"};
+      monitor.config_=conf;
       var req_mock = {};
       var myRes = {
         write:function(data){},
