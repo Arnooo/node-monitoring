@@ -97,9 +97,17 @@ Send.prototype.file = function(path){
  */
 function Monitoring(config){
   var self = this;
+  self.clear();
   self.initWithConfig(config);
-}
+};
 
+Monitoring.prototype.clear = function() {
+  var self = this;
+  self.monitoringDB_ = null;
+  self.config_ = null;
+  self.lastRequest_= null;
+  self.send_ = null;
+};
 
 Monitoring.prototype.initWithConfig = function(config) {
   var self = this;
@@ -110,6 +118,7 @@ Monitoring.prototype.initWithConfig = function(config) {
         if (err) {
           return console.error(err);
         }
+        var backupConfig = self.config_;
         self.validateConfig_(JSON.parse(data))
         .then(function(){
           return self.init();
@@ -120,12 +129,14 @@ Monitoring.prototype.initWithConfig = function(config) {
             console.log(msg);
         })
         .catch(function(err){
+            self.config_ = backupConfig;
             deferred.reject(err);
         })
         .done();
     });
   }
   else{
+      var backupConfig = self.config_;
       self.validateConfig_(config)
       .then(function(){
         return self.init();
@@ -136,6 +147,7 @@ Monitoring.prototype.initWithConfig = function(config) {
           console.log(msg);
       })
       .catch(function(err){
+          self.config_ = backupConfig;
           deferred.reject(err);
       })
       .done();
@@ -160,7 +172,7 @@ Monitoring.prototype.validateConfig_ = function(config) {
         console.error(msg);
     }
     return deferred.promise;
-}
+};
 
 Monitoring.prototype.init = function() {
     var self=this;
@@ -203,17 +215,24 @@ Monitoring.prototype.process = function(callback, req, res, opt_data) {
     if(req && res && callback && this[callback]){
         self.lastRequest_= req;
         self.send_ = new Send(res);
-       // setTimeout(function() { //For debug purpose
-              self[callback].apply(self, [self.lastRequest_, opt_data]);
-       // }, 3000); 
+        var funcRet = self[callback].apply(self, [self.lastRequest_, opt_data]);
+        if(typeof funcRet.then === 'function' ){
+          return funcRet;
+        }
+        else{
+          return true;
+        }
     }
     else{
-        console.error("Error: Try to access unknown function called: "+callback);
+        var msg = "Error: Try to access unknown function called: "+callback;
+        console.error(msg);
+        return new Error(msg);
     }
 };
 
 Monitoring.prototype.setConfig = function(req, config) {
   var self = this;
+  var deferred = Q.defer(); 
   console.log('Set config : '+req);
   var backupConfig = self.config_;
   if(self.config_ != config){
@@ -222,22 +241,36 @@ Monitoring.prototype.setConfig = function(req, config) {
     .then(function(){
       self.send_.json({monitoring:true});
       fs.writeFile(__dirname+'/config.json', JSON.stringify(self.config_), function (err,data) {
-      if (err) {
-        return console.error(err);
-      }
+        if (err) {
+          return console.error(err);
+        }
+
+        var msg = "Success: Config updated!";
+        deferred.resolve({msg:msg});
+        console.log(msg);
       });
     })
     .catch(function(err){
       self.send_.json(err);
       self.config_=backupConfig;
+
+      deferred.reject(err);
+      console.log(err);
     });
   }
+  return deferred.promise;
 };
 
 Monitoring.prototype.getConfig = function(req) {
   var self = this;
   console.log('Get config : '+req);
-  self.send_.json(self.config_);
+  if(self.send_){
+    self.send_.json(self.config_);
+    return true;
+  }
+  else{
+    return self.config_;
+  }
 };
 
 Monitoring.prototype.getProbeHistory = function(req, path) {
@@ -259,6 +292,7 @@ Monitoring.prototype.getProbeHistory = function(req, path) {
           }
         });*/
     }
+    return true;
 };
 
 Monitoring.prototype.getProbes = function(req) {
@@ -267,6 +301,7 @@ Monitoring.prototype.getProbes = function(req) {
   var queryStr="SELECT * FROM Probes ORDER BY probe_uid";
   console.log(queryStr);
   self.monitoringDB_.query(queryStr, self.send_);
+  return true;
 };
 
 Monitoring.prototype.getProbeConfig = function(req) {
@@ -275,7 +310,7 @@ Monitoring.prototype.getProbeConfig = function(req) {
   var queryStr="SELECT * FROM (SELECT T2.*, T1.probe_config_uid FROM ProbesManagement AS T1 LEFT JOIN Probes AS T2 USING (probe_uid))T3 LEFT JOIN ProbeConfig AS T4 USING (probe_config_uid) WHERE probe_uid="+req.url.query.probeUID+" ORDER BY probe_config_uid";
   console.log(queryStr);
   self.monitoringDB_.query(queryStr, self.send_);
-
+  return true;
 };
 
 Monitoring.prototype.getProbeAcquMode = function(req) {
@@ -284,6 +319,7 @@ Monitoring.prototype.getProbeAcquMode = function(req) {
   var queryStr="SELECT * FROM ProbeAcquMode ORDER BY probe_acqu_mode_uid";
   console.log(queryStr);
   self.monitoringDB_.query(queryStr, self.send_);
+  return true;
 };
 
 Monitoring.prototype.getProbesManagement = function(req) {
@@ -292,7 +328,7 @@ Monitoring.prototype.getProbesManagement = function(req) {
   var queryStr="SELECT * FROM  (SELECT * FROM ProbesManagement AS T1 LEFT JOIN Probes AS T2 USING (probe_uid))Temp LEFT JOIN ProbeConfig AS T3 USING (probe_config_uid)";
   console.log(queryStr);
   self.monitoringDB_.query(queryStr, self.send_);
-
+  return true;
 };
 
 Monitoring.prototype.addProbe = function(req, data) {
@@ -308,6 +344,7 @@ Monitoring.prototype.addProbe = function(req, data) {
           self.probesMgt_.initProbes();
       });
     }
+    return true;
 };
 
 Monitoring.prototype.updateProbe = function(req, data) {
@@ -320,6 +357,7 @@ Monitoring.prototype.updateProbe = function(req, data) {
       console.log(queryStr);
       self.monitoringDB_.query(queryStr, self.send_);
     }
+    return true;
 };
 
 Monitoring.prototype.rmProbe = function(req) {
@@ -350,6 +388,7 @@ Monitoring.prototype.rmProbe = function(req) {
             self.monitoringDB_.query(queryStr, self.send_);
         });
     }
+    return true;
 };
 
 Monitoring.prototype.addProbeConfig = function(req, data) {
@@ -394,6 +433,7 @@ Monitoring.prototype.addProbeConfig = function(req, data) {
           self.probesMgt_.initProbes();
       });
     }
+    return true;
 };
 
 Monitoring.prototype.updateProbeConfig = function(req, data) {
@@ -406,6 +446,7 @@ Monitoring.prototype.updateProbeConfig = function(req, data) {
       console.log(queryStr);
       self.monitoringDB_.query(queryStr, self.send_);
     }
+    return true;
 };
 
 Monitoring.prototype.rmProbeConfig = function(req) {
@@ -433,6 +474,7 @@ Monitoring.prototype.rmProbeConfig = function(req) {
         self.monitoringDB_.query(queryStr, self.send_);
       });
     }
+    return true;
 };
 
 Monitoring.prototype.addProbeAcquMode = function(req, data) {
@@ -445,6 +487,7 @@ Monitoring.prototype.addProbeAcquMode = function(req, data) {
       console.log(queryStr);
       self.monitoringDB_.query(queryStr, self.send_);
     }
+    return true;
 };
 
 Monitoring.prototype.rmProbeAcquMode = function(req) {
@@ -458,6 +501,7 @@ Monitoring.prototype.rmProbeAcquMode = function(req) {
       console.log(queryStr);
       self.monitoringDB_.query(queryStr, self.send_);
     }
+    return true;
 };
 
 Monitoring.prototype.updateProbeAcquMode = function(req, data) {
@@ -470,6 +514,7 @@ Monitoring.prototype.updateProbeAcquMode = function(req, data) {
       console.log(queryStr);
       self.monitoringDB_.query(queryStr, self.send_);
     }
+    return true;
 };
 
 Monitoring.prototype.linkAcquModeToConfig = function(req) {
@@ -482,6 +527,7 @@ Monitoring.prototype.linkAcquModeToConfig = function(req) {
       console.log(queryStr);
       self.monitoringDB_.query(queryStr, self.send_);
     }
+    return true;
 };
 
 Monitoring.prototype.changeProbeStatus = function(req, data) {
@@ -490,6 +536,7 @@ Monitoring.prototype.changeProbeStatus = function(req, data) {
     if(data.probe_uid && data.probe_config_uid && data.status !== undefined){
       this.probesMgt_.setProbeStatus(data.probe_uid, data.probe_config_uid, data.status, self.send_);
     }
+    return true;
 };
 
 Monitoring.prototype.createDB = function() {
@@ -509,6 +556,7 @@ Monitoring.prototype.createDB = function() {
         self.send_.json(err);
       });
     }
+    return true;
 };
 
 

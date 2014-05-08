@@ -37,9 +37,8 @@ function MonitoringDB(config){
       host: config.db_host,
       user: config.db_user,
       password: config.db_password,
-      connectTimeout: 1000 //5 second
+      connectTimeout: 1000 //1 second
     };
-    console.log(config);
 };
 
 MonitoringDB.prototype.init = function(){
@@ -73,7 +72,7 @@ MonitoringDB.prototype.isConnected_ = function(){
       password: self.config_.password,
       connectTimeout: self.config_.connectTimeout
   });
-  console.log("Trying to connect to DB!"+self.config_.password);
+  console.log("Trying to connect to DB!");
   connection.connect(function(err) {
       if(err){
           console.error('Error connecting to database server: ',self.config_.host);
