@@ -7,7 +7,8 @@
 /**
  * Module dependencies.
  */
-var npm = require('npm');
+var npm = require('npm'),
+        Q = require('q');
 
 /**
  * Version.
@@ -25,32 +26,52 @@ exports.create = function() {
 
 function ModuleManager (){
   var self = this;
-  self.ls_();
+  self.moduleCompatible_={
+      'node-w1bus':'0.1.2'
+  };
+  npm.load(function (err) {});
+
+  setTimeout(function(){
+      self.moduleCompatibleInstalled_={};
+      self.ls_()
+      .then(function(){
+        npm.config.set('global', true);
+        return self.ls_();
+      })
+      .catch(function(err){
+          console.error(err);
+      })
+      .done(function(){
+          console.log(self.moduleCompatibleInstalled_);
+      });
+
+  },100);
 }
 
-ModuleManager.prototype.ls_ = function (){
-    npm.load(function (err) {
-      // catch errors
-      npm.commands.ls(function (er, data) {
-        // log the error or data
-      });
-      npm.on("log", function (message) {
-        // log the progress of the installation
-        console.log(message);
-      });
+ModuleManager.prototype.ls_ = function (args){
+    var self = this;
+    var deferred = Q.defer(); 
+    npm.commands.ls(args, true, function (er, data) {
+      // log the error or data
+      for(var dep in data.dependencies){
+          self.moduleCompatibleInstalled_[dep]=data.dependencies[dep].version;
+      }
+      deferred.resolve();
     });
+    npm.on("log", function (message) {
+      // log the progress of the installation
+      //console.log(message);
+    });
+    return deferred.promise;
 };
 
 ModuleManager.prototype.install_ = function (moduleArray){
-    npm.load(function (err) {
-      // catch errors
-      npm.commands.install(moduleArray, function (er, data) {
-        // log the error or data
-      });
-      npm.on("log", function (message) {
-        // log the progress of the installation
-        console.log(message);
-      });
+    npm.commands.install(moduleArray, function (er, data) {
+      // log the error or data
+    });
+    npm.on("log", function (message) {
+      // log the progress of the installation
+      //console.log(message);
     });
 };
 
