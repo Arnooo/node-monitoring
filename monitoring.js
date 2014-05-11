@@ -24,8 +24,7 @@ io.sockets.on('connection', function (socket) {
 /**
  * Create Monitoring object and return it
  *
- * @param {Object} req, request send from client
- * @param {Object} res, result send to client
+ * @param {Object} config of database connexion
  * @api public
  */
 exports.create = function(config) {
