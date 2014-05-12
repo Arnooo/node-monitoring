@@ -3,13 +3,13 @@
     	"name": "Arnaud Joubel",
     	"email": "arnaud.joubel@gmail.com"
   	},
-  	"name": "node-monitoring",
+    "name": "node-monitoring",
     "version": "0.1.0",
     "dependencies": {
         "mysql": ">=2.2.0",
         "socket.io":">=0.9.16",
         "q":">=1.0.1"
-    }
+    },
     "description": "Monitoring module used to get monitoring data from a Database such as mysql and send them in json/csv format to your application",
 	"main": "./monitoring",
 	"tags": [
