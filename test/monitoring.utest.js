@@ -7,7 +7,8 @@ var conf={"db_host":"127.0.0.1","db_user":"root","db_password":"bestpasswordever
 // test cases - testing monitoring initialization
 //
 describe('Monitoring: normal cases', function(){
-  var monitor = monitoring.create();
+    monitoring.useMock();
+    var monitor = monitoring.create();
 
 /*  beforeEach(function(done){
     var conf={"db_host":"127.0.0.1","db_user":"root","db_password":"bestpasswordever"};
@@ -175,7 +176,7 @@ describe('Monitoring: failure cases', function(){
       })
       .catch(function(err){
         console.log(err);
-        assert.equal(err.message, "Error: Cannot connect to the database!");
+        assert.equal(err.message, "Error Mock: Cannot connect to the database!");
         done();
       })
       .done(null, done);

@@ -29,9 +29,10 @@ function ModuleManager (){
   self.moduleCompatible_={
       'node-w1bus':'0.1.2'
   };
-  npm.load(function (err) {});
-
-  setTimeout(function(){
+  npm.load(function (err) {
+      if(err){
+        throw err;
+      }
       self.moduleCompatibleInstalled_={};
       self.ls_()
       .then(function(){
@@ -44,8 +45,7 @@ function ModuleManager (){
       .done(function(){
           console.log(self.moduleCompatibleInstalled_);
       });
-
-  },100);
+  });
 }
 
 ModuleManager.prototype.ls_ = function (args){

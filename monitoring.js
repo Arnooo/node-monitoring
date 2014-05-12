@@ -11,6 +11,8 @@ var zlib = require('zlib'),
     fs = require('fs'),
     Q = require('q');
 
+var USE_MOCK = false;
+
 /**
  * Version.
  */
@@ -29,6 +31,10 @@ io.sockets.on('connection', function (socket) {
  */
 exports.create = function(config) {
     return new Monitoring(config);
+};
+
+exports.useMock = function() {
+    USE_MOCK = true;
 };
 
 /**
@@ -182,14 +188,22 @@ Monitoring.prototype.init = function() {
 
     var deferred = Q.defer(); 
     self.errorOnInit_='';
-    self.monitoringDB_ = require('./monitoringDB').create(self.config_);
+    var moDB = require('./monitoringDB');
+    if(USE_MOCK){
+        moDB.useMock();
+    }
+    self.monitoringDB_ = moDB.create(self.config_);
     self.monitoringDB_.init()
     .then(function(){
       if(self.probesMgt_){
         self.probesMgt_.clean();
         self.probesMgt_=null;
       }
-      self.probesMgt_ = require('./probesManagement').create(self.monitoringDB_, io);
+      var prMgt = require('./probesManagement');
+      if(USE_MOCK){
+        prMgt.useMock();
+      }
+      self.probesMgt_ = prMgt.create(self.monitoringDB_, io);
       var msg = "Success: Database connection successful!";
       deferred.resolve({msg:msg});
       console.log(msg);

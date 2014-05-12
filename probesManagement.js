@@ -10,6 +10,8 @@
  var probe = require('./probe'),
  	 Q = require('q');
 
+var USE_MOCK = false;
+
 /**
  * Create ProbesManagement object and return it
  *
@@ -17,6 +19,10 @@
  */
 exports.create = function(monitoringDB, io) {
 	return new ProbesManagement(monitoringDB, io);
+};
+
+exports.useMock = function() {
+    USE_MOCK = true;
 };
 
 /**
@@ -44,6 +50,9 @@ ProbesManagement.prototype.clean = function() {
 
 ProbesManagement.prototype.initProbes = function() {
     var self = this;
+    if(USE_MOCK){
+        return;
+    }
     var queryStr="SELECT * FROM  (SELECT * FROM ProbesManagement AS T1 LEFT JOIN Probes AS T2 USING (probe_uid))Temp LEFT JOIN ProbeConfig AS T3 USING (probe_config_uid)";
     console.log(queryStr);
     self.monitoringDB_.query(queryStr)
@@ -105,6 +114,10 @@ ProbesManagement.prototype.setProbeStatus = function(probe_uid, probe_config_uid
         }
         else{
             self.probes[probe_uid][probe_config_uid].stop();
+        }
+
+        if(USE_MOCK){
+            return;
         }
         //save in db
         var queryStr="UPDATE ProbesManagement SET probe_is_running="+status+" WHERE probe_config_uid="+probe_config_uid+" AND probe_uid="+probe_uid;

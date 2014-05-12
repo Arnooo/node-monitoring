@@ -9,6 +9,7 @@ var mysql =  require('mysql'),
         Q = require('q');
 
 var MONITORING_DB="MonitoringDB";
+var USE_MOCK = false;
 
 var createError = function (errorMsg){
   return new Error(errorMsg);
@@ -21,6 +22,10 @@ var createError = function (errorMsg){
  */
 exports.create = function(config) {
   return new MonitoringDB(config);
+};
+
+exports.useMock = function() {
+    USE_MOCK = true;
 };
 
 /**
@@ -42,21 +47,22 @@ function MonitoringDB(config){
 };
 
 MonitoringDB.prototype.init = function(){
-  var self=this;
-  var deferred = Q.defer(); 
-  self.isConnected_()
-  .then(function() {
-      return self.isDatabaseExist_();
-  })
-  .then(function() {
-      self.isConnectedToDB_=true;
-      self.pool_ = mysql.createPool(self.config_);
-      deferred.resolve();
-  })
-  .catch(function(err){
-      deferred.reject(err);
-  });
-  return deferred.promise;
+    var self=this;
+    var deferred = Q.defer(); 
+
+    self.isConnected_()
+    .then(function() {
+        return self.isDatabaseExist_();
+    })
+    .then(function() {
+        self.isConnectedToDB_=true;
+        self.pool_ = mysql.createPool(self.config_);
+        deferred.resolve();
+    })
+    .catch(function(err){
+        deferred.reject(err);
+    });
+    return deferred.promise;
 };
 
 MonitoringDB.prototype.isConnectedToDB = function(){
@@ -64,54 +70,76 @@ MonitoringDB.prototype.isConnectedToDB = function(){
 };
 
 MonitoringDB.prototype.isConnected_ = function(){
-  var self = this;
-  var deferred = Q.defer(); 
-  var connection = mysql.createConnection({
-      host : self.config_.host,
-      user : self.config_.user,
-      password: self.config_.password,
-      connectTimeout: self.config_.connectTimeout
-  });
-  console.log("Trying to connect to DB!");
-  connection.connect(function(err) {
-      if(err){
-          console.error('Error connecting to database server: ',self.config_.host);
-          deferred.reject(createError("Error: Cannot connect to the database!"));
-      }
-      else{
-          var msg = "Success: Connected to database server: "+self.config_.host;
-          deferred.resolve({msg:msg});
-          console.log(msg);
-      }
-  });
-  connection.end();
-  return deferred.promise;
+    var self = this;
+    var deferred = Q.defer(); 
+    var connection = mysql.createConnection({
+        host : self.config_.host,
+        user : self.config_.user,
+        password: self.config_.password,
+        connectTimeout: self.config_.connectTimeout
+    });
+    console.log("Trying to connect to DB!");
+    if(USE_MOCK){
+        if(self.config_.host === "127.0.0.1"){
+            var msg = "Success Mock: Connected to database server: "+self.config_.host;
+            deferred.resolve({msg:msg});
+            console.log(msg);
+        }
+        else{
+            var msg = "Error Mock: Cannot connect to the database!";
+            console.error(msg);
+            deferred.reject(createError(msg));
+        }
+    }
+    else{
+        connection.connect(function(err) {
+            if(err){
+                var msg = "Error: Cannot connect to the database!";
+                console.error(msg);
+                deferred.reject(createError(msg));
+            }
+            else{
+                var msg = "Success: Connected to database server: "+self.config_.host;
+                deferred.resolve({msg:msg});
+                console.log(msg);
+            }
+        });
+        connection.end();
+    }
+    return deferred.promise;
 };
 
 MonitoringDB.prototype.isDatabaseExist_ = function(){
-  var self = this;
-  var deferred = Q.defer(); 
-  var connection = mysql.createConnection({
-      host : self.config_.host,
-      user : self.config_.user,
-      password: self.config_.password,
-      connectTimeout: self.config_.connectTimeout
-  });
-  var queryStr="SHOW DATABASES LIKE '"+MONITORING_DB+"'";
-  console.log(queryStr);
-  connection.query(queryStr, function(err, results) {
-      if(!results[0]){
-          console.error("Error: "+MONITORING_DB+" database does not exist!");
-          deferred.reject(createError("Error: "+MONITORING_DB+" database does not exist!"));
-      }
-      else{
-          var msg = "Success: Database "+MONITORING_DB+" exist.";
-          deferred.resolve({msg:msg});
-          console.log(msg);
-      }
-  });
-  connection.end();
-  return deferred.promise;
+    var self = this;
+    var deferred = Q.defer(); 
+    var connection = mysql.createConnection({
+        host : self.config_.host,
+        user : self.config_.user,
+        password: self.config_.password,
+        connectTimeout: self.config_.connectTimeout
+    });
+    var queryStr="SHOW DATABASES LIKE '"+MONITORING_DB+"'";
+    console.log(queryStr);
+    if(USE_MOCK){
+        var msg = "Success Mock: Database "+MONITORING_DB+" exist.";
+        deferred.resolve({msg:msg});
+        console.log(msg);
+    }
+    else{
+        connection.query(queryStr, function(err, results) {
+            if(!results[0]){
+                console.error("Error: "+MONITORING_DB+" database does not exist!");
+                deferred.reject(createError("Error: "+MONITORING_DB+" database does not exist!"));
+            }
+            else{
+                var msg = "Success: Database "+MONITORING_DB+" exist.";
+                deferred.resolve({msg:msg});
+                console.log(msg);
+            }
+        });
+        connection.end();
+    }
+    return deferred.promise;
 };
 
 MonitoringDB.prototype.createDB = function(){
