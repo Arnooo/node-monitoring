@@ -9,7 +9,7 @@
         "mysql": ">=2.2.0",
         "socket.io":">=0.9.16",
         "q":">=1.0.1"
-    },
+    }
     "description": "Monitoring module used to get monitoring data from a Database such as mysql and send them in json/csv format to your application",
 	"main": "./monitoring",
 	"tags": [
@@ -36,6 +36,7 @@
       "test": "make test"
     },
     "devDependencies": {
-        "mocha": ">= 1.18.2"
+        "mocha": ">= 1.18.2",
+        "sinon":"*"
     }
 }
