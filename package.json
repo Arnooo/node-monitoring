@@ -37,6 +37,6 @@
     },
     "devDependencies": {
         "mocha": ">= 1.18.2",
-        "sinon":"*"
+        "sinon":">=1.9.0"
     }
 }
