@@ -29,24 +29,32 @@ function ModuleManager (){
   self.moduleCompatible_={
       'node-w1bus':'0.1.2'
   };
-  npm.load(function (err) {
-      if(err){
-        throw err;
-      }
-      self.moduleCompatibleInstalled_={};
-      self.ls_()
-      .then(function(){
-        npm.config.set('global', true);
-        return self.ls_();
-      })
-      .catch(function(err){
-          console.error(err);
-      })
-      .done(function(){
-          console.log(self.moduleCompatibleInstalled_);
-      });
-  });
+  self.moduleCompatibleInstalled_={};
 }
+
+ModuleManager.prototype.init = function (){
+    var self = this;
+    var deferred = Q.defer(); 
+    npm.load(function (err) {
+        if(err){
+          throw err;
+        }
+        self.moduleCompatibleInstalled_={};
+        self.ls_()
+        .then(function(){
+            npm.config.set('global', true);
+            return self.ls_();
+        })
+        .catch(function(err){
+            console.error(err);
+            deferred.reject(err);
+        })
+        .done(function(){
+            deferred.resolve();
+        });
+    });
+    return deferred.promise;
+};
 
 ModuleManager.prototype.ls_ = function (args){
     var self = this;
@@ -75,5 +83,3 @@ ModuleManager.prototype.install_ = function (moduleArray){
     });
 };
 
-
-var test = new ModuleManager();
