@@ -13,7 +13,7 @@ var confTravisRoot=config;
 //
 describe('Monitoring: normal cases', function(){
     //monitoring.useMock();
-    var monitor = monitoring.create();
+    var monitor = monitoring.create(confTravisRoot);
 
 /*  beforeEach(function(done){
     var conf={"db_host":"127.0.0.1","db_user":"root","db_password":"bestpasswordever"};
@@ -35,7 +35,7 @@ describe('Monitoring: normal cases', function(){
 
   describe('#initWithConfig()', function(){
     it('should return a Monitoring object correctly initialized!', function(done){
-      monitor.initWithConfig()
+      monitor.initWithConfig(confTravisRoot)
       .then(function(data){
           assert.equal(data.msg, "Success: Monitoring initialized!");
           done();
