@@ -1,6 +1,7 @@
 var assert = require("assert"),
     sinon = require("sinon"),
     monitoring = require("../monitoring");
+console.log("NODE_ENV : "+process.env.NODE_ENV);
 
 var config = require('config');
 // config now contains your actual configuration values as determined by the process.env.NODE_ENV
