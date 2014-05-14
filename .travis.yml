@@ -2,7 +2,8 @@ language: node_js
 node_js:
   - "0.10"
 env:
-  - DB=mysql NODE_ENV=travis
+  global:
+  - NODE_ENV=travis
 before_script:
   - mysql -e 'create database monitoringDB;'
 branches:
