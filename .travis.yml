@@ -5,7 +5,7 @@ env:
   global:
   - NODE_ENV=travis
 before_script:
-  - mysql -e 'create database monitoringDB;'
+  - mysql -u root < createMonitoringDB.sql
 branches:
   only:
     - master
