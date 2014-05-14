@@ -30,7 +30,7 @@ function ModuleManager (){
       'node-w1bus':'0.1.2'
   };
   self.moduleCompatibleInstalled_={};
-}
+};
 
 ModuleManager.prototype.init = function (){
     var self = this;
@@ -54,6 +54,16 @@ ModuleManager.prototype.init = function (){
         });
     });
     return deferred.promise;
+};
+
+ModuleManager.prototype.getModuleCompatible = function (){
+    var self = this;
+    return self.moduleCompatible_;
+};
+
+ModuleManager.prototype.getModuleCompatibleInstalled = function (){
+    var self = this;
+    return self.moduleCompatibleInstalled_;
 };
 
 ModuleManager.prototype.ls_ = function (args){

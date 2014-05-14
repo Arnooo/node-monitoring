@@ -41,11 +41,11 @@ function Probe (config) {
 
 	//Load node module managing this probe
 	if(self.node_module_ === "fack-sensor"){
-		self.sensor_ = require(__dirname+"/"+self.node_module_);
+		self.sensor_ = require(__dirname+"/"+self.node_module_).create();
 	}
 	else
 	{
-		self.sensor_ = require(self.node_module_);
+		self.sensor_ = require(self.node_module_).create();
 	}
 
 	//Starting probe if necessary
@@ -77,11 +77,17 @@ Probe.prototype.exec = function(){
 	console.log("getting probe value");
 
 	var self = this;
-	if(self.sensor_.isConnected()){
-		self.sensor_.getValue(function(data){
-			data.probe_config_uid = self.configUID_;
-			data.probe_history_table_uid = self.historyTableUID_;
-			self.eventEmitter_.emit('eventNewValue', data);	
+	if(self.sensor_){
+		self.sensor_.isConnected()
+		.then(function(){
+			self.sensor_.getValue(function(data){
+				data.probe_config_uid = self.configUID_;
+				data.probe_history_table_uid = self.historyTableUID_;
+				self.eventEmitter_.emit('eventNewValue', data);	
+			});
+		})
+		.catch(function(err){
+			//todo manage error
 		});
 	}
 	else{

@@ -2,12 +2,16 @@ var assert = require("assert"),
     sinon = require("sinon"),
     monitoring = require("../monitoring");
 
-var conf={"db_host":"127.0.0.1","db_user":"root","db_password":"bestpasswordever"};
+var config = require('config');
+// config now contains your actual configuration values as determined by the process.env.NODE_ENV
+console.log("db_password : "+config.db_password);
+
+var confTravisRoot=config;
 //--------------------------------------------------------------------------------
 // test cases - testing monitoring initialization
 //
 describe('Monitoring: normal cases', function(){
-    monitoring.useMock();
+    //monitoring.useMock();
     var monitor = monitoring.create();
 
 /*  beforeEach(function(done){
@@ -60,7 +64,6 @@ describe('Monitoring: normal cases', function(){
     it('should set a new config if valid and reinit the monitoring object!', function(done){
       //we reset previous config
       monitor.config_ = null;
-      var conf={"db_host":"127.0.0.1","db_user":"root","db_password":"bestpasswordever"};
       var req_mock = {};
       var myRes = {
         write:function(data){},
@@ -70,7 +73,7 @@ describe('Monitoring: normal cases', function(){
       //res_mock.expects("write").atLeast(1).withArgs(JSON.stringify({monitoring:true}));
       //res_mock.expects("end").atLeast(1);
 
-      monitor.process("setConfig", req_mock, myRes, conf)
+      monitor.process("setConfig", req_mock, myRes, confTravisRoot)
       .then(function(data){
         assert.ok(data);
         done();
@@ -83,7 +86,7 @@ describe('Monitoring: normal cases', function(){
   describe('#validateConfig_()', function(){
     it('should return a msg to confirm the configuration validity', function(done){
       var conf=monitor.config_;
-      monitor.validateConfig_(conf)
+      monitor.validateConfig_(confTravisRoot)
       .then(function(data){
           assert.equal(data.msg, "Success: Monitoring config validated!");
           done();
@@ -98,7 +101,7 @@ describe('Monitoring: normal cases', function(){
   describe('#getConfig()', function(){
     it('should return a valid config!', function(done){
       monitor.clear();
-      monitor.config_=conf;
+      monitor.config_=confTravisRoot;
       monitor.validateConfig_(monitor.getConfig())
       .then(function(data){
           assert.equal(data.msg, "Success: Monitoring config validated!");
@@ -114,7 +117,7 @@ describe('Monitoring: normal cases', function(){
   describe('#process()', function(){
     it('should call the given callback and send a response back!', function(){
       monitor.clear();
-      monitor.config_=conf;
+      monitor.config_=confTravisRoot;
       var req_mock = {};
       var myRes = {
         write:function(data){},
@@ -176,7 +179,7 @@ describe('Monitoring: failure cases', function(){
       })
       .catch(function(err){
         console.log(err);
-        assert.equal(err.message, "Error Mock: Cannot connect to the database!");
+        assert.equal(err.message, "Error: Cannot connect to the database!");
         done();
       })
       .done(null, done);
@@ -199,7 +202,7 @@ describe('Monitoring: failure cases', function(){
 
     });
 
-    it('should not be able to connect to the database, you did not protect your root access with a password!', function(done){
+/*    it('should not be able to connect to the database, you did not protect your root access with a password!', function(done){
       var fackConfig={"db_host":"127.0.0.1","db_user":"root","db_password":""};
       monitor.initWithConfig(fackConfig)
       .then(function(data){
@@ -213,7 +216,7 @@ describe('Monitoring: failure cases', function(){
       })
       .done(null, done);
 
-    });
+    });*/
   });
 
   describe('#process()', function(){

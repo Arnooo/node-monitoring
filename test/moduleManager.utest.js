@@ -15,11 +15,11 @@ describe('Module manager: normal cases', function(){
         });
 
         it('should be empty before init!', function(){
-            assert.ok(!mgr.moduleCompatibleInstalled_['q']);
+            assert.ok(!mgr.getModuleCompatibleInstalled()['q']);
         });
 
         it('should be compatible with node-w1bus module of version >= 0.1.2!', function(){
-            assert.ok(mgr.moduleCompatible_['node-w1bus'] >= '0.1.2');
+            assert.ok(mgr.getModuleCompatible()['node-w1bus'] >= '0.1.2');
         });   
     });
 
@@ -27,7 +27,7 @@ describe('Module manager: normal cases', function(){
         it('should return an initialized object, including Q dependencie!', function(done){
             mgr.init()
             .then(function(){
-                assert.ok(mgr.moduleCompatibleInstalled_['q']);
+                assert.ok(mgr.getModuleCompatibleInstalled()['q']);
                 done();
             })
             .catch(function(err){
